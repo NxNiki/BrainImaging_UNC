@@ -2,17 +2,23 @@
 
 ## create bids file structure for rsfMRI data:
 
-if [ ! -d "adni_bids" ]
+data_dir='/ram/USERS/xin/ADNIDOD_fMRI'
+out_dir="adni_dod_fmri"
+
+if [ ! -d $out_dir ]
 then
-	mkdir adni_bids
+	mkdir $out_dir 
 fi
+
+ls -d $data_dir/0*/*rs[f,F]MRI*/*/I*/*.nii>temp.txt
+ls -d $data_dir/0*/*rs[f,F]MRI*/*/I*/*.json>>temp.txt
 
 while read line;
 do
 	subid=$(echo $line| awk -F '/' '{print $9}')
 	session=$(echo $line| awk -F '/' '{print $8}')
 #	session=${session//-/.}	
-	new_dir=adni_bids/$subid/$session/func/
+	new_dir=$out_dir/$subid/$session/func/
 	
 	echo $new_dir
 
@@ -21,7 +27,12 @@ do
 		mkdir -p $new_dir
 	fi
 
-	cp -l $line/*.nii $new_dir
-	cp -l $line/*.json $new_dir
+	#cp -l $line/*.nii $new_dir
+	#cp -l $line/*.json $new_dir
+	cp -l $line $new_dir
 
-done < out01_rsfmri_dir3.txt 
+	fslinfo $line/*.nii
+
+done < temp.txt 
+
+#rm temp.txt
