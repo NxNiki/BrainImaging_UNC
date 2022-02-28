@@ -13,25 +13,45 @@ then
 fi
 
 # for T1 images:
-#ls -d $data_dir/0*/*T1_image/*/I*/*.nii>temp.txt
+ls -d $data_dir/0*/*T1_image/*/I*/*.nii>temp_t1.txt
 #ls -d $data_dir/0*/*T1_image/*/I*/*.json>>temp.txt
 
 # rsfMRI images
-ls -d $data_dir/0*/*rs[f,F]MRI*/*/I*/*.nii>temp.txt
-ls -d $data_dir/0*/Axial_fcMRI*/*/I*/*.nii>>temp.txt
-ls -d $data_dir/0*/AXIAL_RS_fMRI*/*/I*/*.nii>>temp.txt
+ls -d $data_dir/0*/*rs[f,F]MRI*/*/I*/*.nii>temp_fun.txt
+ls -d $data_dir/0*/Axial_fcMRI*/*/I*/*.nii>>temp_fun.txt
+ls -d $data_dir/0*/AXIAL_RS_fMRI*/*/I*/*.nii>>temp_fun.txt
 
-ls -d $data_dir/0*/*rs[f,F]MRI*/*/I*/*.json>>temp.txt
-ls -d $data_dir/0*/Axial_fcMRI*/*/I*/*.json>>temp.txt
-ls -d $data_dir/0*/AXIAL_RS_fMRI*/*/I*/*.json>>temp.txt
+ls -d $data_dir/0*/*rs[f,F]MRI*/*/I*/*.json>temp_json.txt
+ls -d $data_dir/0*/Axial_fcMRI*/*/I*/*.json>>temp_json.txt
+ls -d $data_dir/0*/AXIAL_RS_fMRI*/*/I*/*.json>>temp_json.txt
 
 while read line;
 do
 	subid=sub-$(echo $line| awk -F '/' '{print $6}')
 	session=ses-$(echo $line| awk -F '/' '{print $8}')
 #	session=${session//-/.}	
-	#new_dir=$out_dir/$subid/$session/anat/
-	new_dir=$out_dir/$subid/$session/func/
+	new_dir=$out_dir/${subid}_$session/anat
+	
+	echo $new_dir
+
+	if [ ! -d $new_dir ]
+	then
+		mkdir -p ${new_dir}
+	fi
+
+	cp -l $line $new_dir/${subid}_${session}_T1w.nii
+
+	fslinfo $line
+
+done < temp_t1.txt 
+
+while read line;
+do
+	subid=sub-$(echo $line| awk -F '/' '{print $6}')
+	session=ses-$(echo $line| awk -F '/' '{print $8}')
+#	session=${session//-/.}	
+	
+	new_dir=$out_dir/${subid}_$session/func
 	
 	echo $new_dir
 
@@ -40,12 +60,30 @@ do
 		mkdir -p $new_dir
 	fi
 
-	#cp -l $line/*.nii $new_dir
-	#cp -l $line/*.json $new_dir
-	cp -l $line $new_dir
+	cp -l $line $new_dir/${subid}_${session}_rest_bold.nii
 
 	fslinfo $line
 
 done < temp.txt 
+
+
+while read line;
+do
+	subid=sub-$(echo $line| awk -F '/' '{print $6}')
+	session=ses-$(echo $line| awk -F '/' '{print $8}')
+#	session=${session//-/.}	
+	
+	new_dir=$out_dir/${subid}_$session/func
+	
+	echo $new_dir
+
+	if [ ! -d $new_dir ]
+	then
+		mkdir -p $new_dir
+	fi
+
+	cp -l $line $new_dir/${subid}_${session}_rest_bold.json
+
+done < temp_json.txt 
 
 #rm temp.txt
