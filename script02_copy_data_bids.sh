@@ -5,7 +5,7 @@
 #data_dir='/ram/USERS/xin/ADNIDOD_fMRI'
 data_dir='/ram/USERS/xin/ADNI_DOD_MRI'
 
-out_dir="out02_adni_dod_mri_bids"
+out_dir="out02_adni_dod_bids"
 
 if [ ! -d $out_dir ]
 then
@@ -31,7 +31,8 @@ do
 	session=ses-$(echo $line| awk -F '/' '{print $8}')
 	session=$(echo "$session" | tr '_' '-')	
 	
-	new_dir=$out_dir/${subid}/anat
+	#new_dir=$out_dir/${subid}/anat
+	new_dir=$out_dir/${subid}/${session}/anat
 	
 	echo $new_dir
 
@@ -41,6 +42,7 @@ do
 	fi
 
 	cp -l $line $new_dir/${subid}-T1w.nii
+	gzip $new_dir/${subid}-T1w.nii
 
 	fslinfo $line
 
@@ -52,7 +54,8 @@ do
 	session=ses-$(echo $line| awk -F '/' '{print $8}')
 	session=$(echo "$session" | tr '_' '-')	
 	
-	new_dir=$out_dir/${subid}/func
+	#new_dir=$out_dir/${subid}/func
+	new_dir=$out_dir/${subid}/$session/func
 	
 	echo $new_dir
 
@@ -61,7 +64,8 @@ do
 		mkdir -p $new_dir
 	fi
 
-	cp -l $line $new_dir/${subid}-rest-bold.nii
+	cp -l $line $new_dir/${subid}_task-rest_bold.nii
+	gzip $new_dir/${subid}_task-rest_bold.nii
 
 	fslinfo $line
 
@@ -83,7 +87,7 @@ do
 		mkdir -p $new_dir
 	fi
 
-	cp -l $line $new_dir/${subid}-rest-bold.json
+	cp -l $line $new_dir/${subid}_task-rest_bold.json
 
 done < temp_json.txt 
 
