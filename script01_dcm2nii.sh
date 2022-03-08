@@ -2,14 +2,15 @@
 
 ## convert dcm files to nii for rsfMRI data:
 
-data_dir='/ram/USERS/xin/ADNI_FMRI'
+#data_dir='/ram/USERS/xin/ADNI_FMRI'
+data_dir='/home/xin/Downloads/ADNI_FMRI'
 #data_dir='/ram/USERS/xin/ADNI_DOD_MRI'
 
 out_file='out01_adni_fmri.txt'
 
 ## list all the subdirectories to identifiy folders for rsfMRI data:
-ls -d $data_dir/0*/*/ | awk -F '/' '{print $7}' | sort | uniq > temp_unqiue_dir.txt
-ls -d $data_dir/0*/*/*/*/ | sort > temp_all_dir.txt
+ls -d $data_dir/*_S_*/*/ | awk -F '/' '{print $7}' | sort | uniq > temp_unqiue_dir.txt
+ls -d $data_dir/*_S_*/*/*/*/ | sort > temp_all_dir.txt
 
 ## create a list of directories of rsfMRI dcm files.
 
