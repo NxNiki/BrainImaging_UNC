@@ -29,14 +29,16 @@ set -e
 
 ########################### create downsampled atlas:
 
+## WE MAY NEED TO DOWNSAMPLE ATALS FOR EACH 4-D BOLD IMAGE AS EACH MAY HAVE DIFFERENT RESOLUTION!!
+
 img_dir="out03_adni_fmri_t1_dpsfa4/FunImgAR"
 atlas="/home/xin/Downloads/DPABI_V6.1_220101/Templates/Power_Neuron_264ROIs_Radius5_Mask.nii"
 
 # copy the first 4-D image from img_dir:
-img=$(find $img_dir/ -name 'rarest_hold.nii' | head -n 1)
-
-cp $atlas tmp_atlas.nii
+img=$(find $img_dir -name 'rarest_bold.nii' | head -n 1)
+echo $img
 cp $img tmp_img4d.nii
-
-flirt -in tmp_atlas.nii -ref tmp_img4d.nii -applyisoxfm 3.0 -nosearch -out tmp_atlas.nii
+#
+flirt -in $atlas -ref tmp_img4d.nii -nosearch -out tmp_atlas.nii
+#rm tmp_img4d.nii
 
