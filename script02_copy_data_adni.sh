@@ -7,7 +7,7 @@
 data_dir_fmri='/home/xin/Downloads/ADNI_FMRI'
 data_dir_t1='/home/xin/Downloads/ADNI_T1'
 
-out_dir="out02_adni_fmri_t1"
+out_dir="out02_adni_fmri_t1_cpac"
 
 if [ ! -d $out_dir ]
 then

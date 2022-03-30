@@ -4,11 +4,11 @@ set -e
 
 ##### Step01: compute mean for each atlase ##########
 
-img_dir="out03_adni_fmri_t1_dpsfa1"
-out_dir="out04_adni_roi_signals1"
+#img_dir="out03_adni_fmri_t1_dpsfa1/FunImgAR"
+#out_dir="out04_adni_roi_signals1"
 
-#img_dir="out03_adni_fmri_t1_dpsfa2/FunImgAR"
-#out_dir="out04_adni_roi_signals2"
+img_dir="out03_adni_fmri_t1_dpsfa2/FunImgAR"
+out_dir="out04_adni_roi_signals2"
 
 #img_dir="out03_adni_fmri_t1_dpsfa3/FunImgAR"
 #out_dir="out04_adni_roi_signals3"
@@ -22,23 +22,41 @@ out_dir="out04_adni_roi_signals1"
 #img_dir="out03_adni_fmri_t1_dpsfa6/FunImgAR"
 #out_dir="out04_adni_roi_signals6"
 
-
 atlas="/home/xin/Downloads/DPABI_V6.1_220101/Templates/Power_Neuron_264ROIs_Radius5_Mask.nii"
 
-# ---------------------------------------------------
+curr_dir=$(pwd)
+#out_dir=$curr_dir/$out_dir
+
+#####################################################
 
 mkdir -p $out_dir
 rm -f $out_dir/tmp_roi_*.txt
 
-for img in $(find $img_dir/FunImgAR -name 'rarest_bold.nii');
+for img in $(find $img_dir/ -name 'rarest_bold.nii');
 do
+
     sub_dir=${img%%/rarest_bold.nii}
     sub_id=${sub_dir##*/}
-    mask=$img_dir/Masks/AutoMasks/AutoMask_${sub_id}.nii
+    echo $sub_dir
     echo $sub_id
     echo $img
-    #flirt -in $atlas -ref $img -nosearch -searchrx 0 0 -searchry 0 0 -searchrz 0 0 -interp nearestneighbour -out $out_dir/tmp_atlas.nii
-    flirt -in $atlas -ref $mask -nosearch -searchrx 0 0 -searchry 0 0 -searchrz 0 0 -interp nearestneighbour -out $out_dir/tmp_atlas.nii
+
+    # ------- resample bold images to match the atlas: -------
+
+    cd $sub_dir
+    rm -f vol*.nii.gz
+    fslsplit rarest_bold.nii
+    for v in vol*.nii.gz;do
+        echo $v
+        flirt -in $v -ref $atlas -out tmp_flirt_$v
+    done
+    fslmerge -t rarest_bold_downsample `imglob tmp_flirt_*.nii.gz`
+    #rm tmp_flirt_*.nii.gz
+    #rm vol*.nii.gz
+    cd $curr_dir
+
+    # ----------------- extract roi signals ------------------
+
     # compute mean for each region in the atlas:
     index=1
     while [ $index -ne 265 ]
@@ -46,12 +64,11 @@ do
         #echo $index
         # create temp_mask for roi:
     	fslmaths $out_dir/tmp_atlas -uthr $index -thr $index $out_dir/tmp_mask
-        fslmeants -i $img -o $out_dir/tmp_roi_${index}.txt -m $out_dir/tmp_mask
+        fslmeants -i $sub_dir/rarest_bold_downsample -o $out_dir/tmp_roi_${index}.txt -m $out_dir/tmp_mask
     	#fslmaths $img -mul tmp_mask tmp_roi.nii.gz
     	#fslstats -t tmp_roi.nii.gz -M > tmp_roi_${index}.txt
         index=$(($index+1))
     done
-    
 
     ########## Step02: combine data for all atlases ##########
 
@@ -64,8 +81,8 @@ do
     # fill roi signals:
     paste -d "\t" $out_dir/tmp_roi_*.txt >> $out_dir/roi_signals_power264_${sub_id}.txt
     echo $(cat $out_dir/roi_signals_power264_${sub_id}.txt | wc -l)
-    rm $out_dir/tmp_roi_*.txt
-    rm $out_dir/tmp_*.nii.gz
-    #break
+    #rm $out_dir/tmp_roi_*.txt
+    #rm $out_dir/tmp_*.nii.gz
+    break
 
 done
